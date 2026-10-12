@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Mona Sweeper: a candy-pastel GitHub contribution-graph Minesweeper game starring Mona the Octocat. Uncover clean commits, flag hidden bugs, and ship the release.">
+  <title>Mona Sweeper</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Mona Sweeper">
+  <meta name="theme-color" content="#f7f4e9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#25232f" media="(prefers-color-scheme: dark)">
+  <script>
+    (() => {
+      let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      try {
+        const saved = localStorage.getItem('mona-sweeper-theme');
+        if (saved === 'dark' || saved === 'light') theme = saved;
+      } catch { /* storage unavailable */ }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./src/main.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Mona Sweeper home">
+        <svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/></svg>
+        <span>GitHub<span class="brand-sub"> / Arcade</span></span>
+      </a>
+      <div class="top-actions">
+        <button id="theme" class="chip" type="button" aria-pressed="false" title="Toggle dark mode">Dark mode</button>
+        <button id="music" class="chip" type="button" aria-pressed="true" title="Toggle the original chiptune (M toggles all audio)">Music on</button>
+        <button id="sound" class="chip" type="button" aria-pressed="true" title="Toggle sound effects (M toggles all audio)">SFX on</button>
+        <button id="help" class="chip round" type="button" aria-label="How to play">?</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="heading">
+        <div>
+          <p class="eyebrow">SWEEP THE GRAPH. FLAG THE BUGS. SHIP THE RELEASE.</p>
+          <h1>Mona <span>Sweeper</span><b class="edition">CI</b></h1>
+        </div>
+        <div class="controls-hint" aria-hidden="true">
+          <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><span>move</span>
+          <kbd>Space</kbd><span>act</span>
+          <kbd>F</kbd><span>flag</span>
+          <kbd>C</kbd><span>chord</span>
+          <kbd>P</kbd><span>pause</span>
+        </div>
+      </section>
+
+      <section class="game-shell" aria-label="Mona Sweeper game">
+        <div class="game-toolbar">
+          <div class="repo">
+            <span class="branch-icon" aria-hidden="true">⑂</span>
+            <div><span class="label">REPOSITORY</span><strong id="repo-name">hello-world</strong></div>
+            <span class="branch-tag" id="branch">main</span>
+          </div>
+
+          <div class="difficulty-group" role="group" aria-label="Repository size">
+            <button id="diff-starter" class="diff-btn" type="button" data-difficulty="starter" aria-pressed="true">Starter 9×9</button>
+            <button id="diff-active" class="diff-btn" type="button" data-difficulty="active" aria-pressed="false">Active 12×12</button>
+            <button id="diff-monorepo" class="diff-btn" type="button" data-difficulty="monorepo" aria-pressed="false">Monorepo 14×12</button>
+          </div>
+
+          <div class="scoreboard">
+            <div><span class="label">BUGS</span><strong id="bugs-left">010</strong></div>
+            <div><span class="label">TIME</span><strong id="timer">000</strong></div>
+            <div><span class="label">SCORE</span><strong id="score">00000</strong></div>
+            <div><span class="label">BEST</span><strong id="best">00000</strong></div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button id="mona-status" class="mona-badge" type="button" title="Click to start a fresh repository board (R)">
+            <img src="./assets/octocat.svg" alt="" width="24" height="24">
+            <div>
+              <span class="label">MONA STATUS</span>
+              <strong id="mona-mood-text">Ready to sweep</strong>
+            </div>
+          </button>
+
+          <div class="action-controls">
+            <button id="mode-toggle" class="mode-btn" type="button" aria-pressed="false" title="Switch tap/click action between Reveal and Flag (X)">
+              <span class="mode-dot" aria-hidden="true"></span>
+              <span id="mode-label">Mode: Reveal</span>
+            </button>
+            <button id="flag-here" class="action-chip" type="button" title="Flag or unflag the selected tile (F)">Flag tile</button>
+            <button id="chord-here" class="action-chip" type="button" title="Chord adjacent tiles around a satisfied number (C)">Chord</button>
+            <button id="new-game" class="action-chip" type="button" title="Start a fresh board (R or N)">New board</button>
+            <button id="pause" class="action-chip pause-btn" type="button" title="Pause (P or Esc)" aria-label="Pause game" disabled>Ⅱ</button>
+          </div>
+        </div>
+
+        <div class="stage" id="stage" tabindex="0" data-status="ready"
+          aria-label="Contribution graph Minesweeper board. Move cursor with arrow keys or WASD. Press Space or Enter to reveal, F to flag a bug, C to chord, X to switch Reveal or Flag mode, P to pause.">
+          <div class="board-wrap">
+            <div id="board" class="board" role="grid" aria-label="Contribution graph tiles"></div>
+          </div>
+
+          <div class="message" id="message">
+            <p class="eyebrow" id="message-kicker">PULL_REQUEST_TEMPLATE.md</p>
+            <h2 id="message-title">Sweep the contribution graph.</h2>
+            <p id="message-detail">Your first click is always safe. Uncover every clean commit square and flag hidden bugs before merging to main.</p>
+            <button id="primary" class="primary" type="button">Start sweep <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <div class="progress-row">
+          <div><span class="live-dot"></span><b id="remaining">71</b> safe commits left to verify</div>
+          <div class="progress-track"><i id="progress-fill"></i></div>
+          <span id="percentage">0%</span>
+          <span class="best-time-pill">Fastest: <b id="best-time">--:--</b></span>
+        </div>
+        <p class="sr-only" id="announcer" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="legend" aria-label="Legend">
+        <span class="legend-title">IN THIS REPO</span>
+        <span><i class="swatch unrevealed"></i>Unverified tile</span>
+        <span><i class="swatch c1"></i><i class="swatch c2"></i><i class="swatch c3"></i><i class="swatch c4"></i>Clean commits (0 adjacent bugs)</span>
+        <span><i class="swatch num"></i>Number = adjacent bugs (1–8)</span>
+        <span><i class="swatch flag"></i>Flagged bug</span>
+        <span><i class="swatch bug"></i>Regression bug</span>
+      </section>
+
+      <footer>
+        <span>An unofficial fan game. Not affiliated with or endorsed by GitHub.</span>
+        <a id="arcade-link" class="arcade-link" href="https://filmgirl.github.io/arcade/" hidden>More games in GitHub Arcade</a>
+        <a class="source-link" href="https://github.com/filmgirl/mona-sweeper">Source &amp; credits</a>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <button id="close-help" class="dialog-close" type="button" aria-label="Close instructions">×</button>
+    <p class="eyebrow">CONTRIBUTING.md</p>
+    <h2 id="help-title">How to sweep</h2>
+    <p>Mona is auditing the contribution graph before a release. Uncover every clean commit tile without triggering a hidden bug. Your first revealed tile in any repository is guaranteed to open a safe 3×3 neighborhood.</p>
+    <div class="help-grid">
+      <div>
+        <h3>Keyboard</h3>
+        <p><kbd>←</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>→</kbd> or <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> move the cursor. <kbd>Space</kbd> or <kbd>Enter</kbd> performs the current mode action (or chords on a revealed number). <kbd>F</kbd> flags a bug. <kbd>C</kbd> chords. <kbd>X</kbd> toggles Reveal/Flag mode. <kbd>R</kbd> starts a new board. <kbd>P</kbd> or <kbd>Esc</kbd> pauses. <kbd>M</kbd> mutes all audio.</p>
+      </div>
+      <div>
+        <h3>Mouse and touch</h3>
+        <p>Click or tap a tile to reveal it. Right-click (or switch <b>Mode: Flag</b> on touch screens) to plant a bug flag. Click, double-click, or tap a revealed number when its adjacent flags match to chord all remaining neighbors.</p>
+      </div>
+    </div>
+    <h3>Repository rules</h3>
+    <ul class="help-list">
+      <li><i class="swatch c3"></i><b>Clean commits</b>: tiles with 0 adjacent bugs automatically cascade and reveal connected clean regions.</li>
+      <li><i class="swatch num"></i><b>Clue numbers (1–8)</b>: tell you exactly how many bugs hide in the 8 surrounding tiles.</li>
+      <li><i class="swatch flag"></i><b>Bug flags</b>: protect suspected bug tiles from accidental clicks and enable fast chording.</li>
+      <li><i class="swatch bug"></i><b>Difficulty presets</b>: switch between <b>Starter 9×9</b> (10 bugs), <b>Active 12×12</b> (22 bugs), and <b>Monorepo 14×12</b> (28 bugs).</li>
+    </ul>
+    <p>Your best score and fastest clear time for each repository size are saved locally in this browser. The game pauses automatically when its window loses focus.</p>
+    <button id="got-it" class="primary" type="button">Got it <span aria-hidden="true">→</span></button>
+  </dialog>
+</body>
+</html>
